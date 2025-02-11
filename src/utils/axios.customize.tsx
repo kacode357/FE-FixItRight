@@ -18,7 +18,7 @@ export const setGlobalLoadingHandler = (
 const defaultAxiosInstance: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL,
   headers: {
-    "content-type": "multipart/form-data",
+    "Content-Type": "application/json",
   },
   timeout: 300000,
   timeoutErrorMessage: "Connection timeout exceeded",
@@ -58,7 +58,7 @@ defaultAxiosInstance.interceptors.response.use(
 const axiosWithoutLoading: AxiosInstance = axios.create({
   baseURL: import.meta.env.VITE_BACKEND_URL,
   headers: {
-    "content-type": "multipart/form-data",
+    "Content-Type": "application/json",
   },
   timeout: 300000,
   timeoutErrorMessage: "Connection timeout exceeded",
@@ -105,8 +105,6 @@ const handleErrorByNotification = (errors: AxiosError<ErrorResponse>) => {
       message = errorMessages.join(", ");
     }
   }
-
- 
 
   // Hiển thị thông báo lỗi nếu có
   if (message) {

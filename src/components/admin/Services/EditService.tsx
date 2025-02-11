@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Modal, Form, Input, Button, message } from "antd";
 import { GetRepairServiceById, EditRepairServiceApi } from "../../../services/api";
+import FileUploader from "../../../utils/FileUploader"; // Import FileUploader
 
 interface EditServiceProps {
   visible: boolean;
@@ -19,7 +20,7 @@ const EditService: React.FC<EditServiceProps> = ({
 }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null); // State to store the selected file
+  const [imageUrl, setImageUrl] = useState<string>("");
 
   useEffect(() => {
     if (visible && serviceId) {
@@ -30,30 +31,30 @@ const EditService: React.FC<EditServiceProps> = ({
             description: data.Description,
             price: data.Price,
           });
+
+          // Gán URL ảnh hiện tại (nếu có) để hiển thị
+          setImageUrl(data.ImageUrl || "");
         })
         .catch((error) => {
           message.error("Failed to fetch service data");
           console.error(error);
         });
+    } else {
+      form.resetFields();
+      setImageUrl("");
     }
   }, [visible, serviceId, form]);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      setSelectedFile(e.target.files[0]); // Store the selected file
-    }
-  };
-
   const handleSave = async (values: any) => {
-    if (!selectedFile) {
-      message.error("Please upload a file!");
+    if (!imageUrl) {
+      message.error("Please upload an image!");
       return;
     }
 
     setLoading(true);
     try {
       const requestData = {
-        File: selectedFile,
+        ImageUrl: imageUrl, // Lưu URL từ Firebase thay vì file
         Name: values.name,
         Description: values.description,
         Price: parseFloat(values.price),
@@ -61,10 +62,9 @@ const EditService: React.FC<EditServiceProps> = ({
 
       await EditRepairServiceApi(serviceId, requestData);
       message.success("Service updated successfully!");
-      onSave(serviceId, requestData); // Notify parent component
-      ResetSerVices(); // Reset services if needed
+      onSave(serviceId, requestData);
+      ResetSerVices();
       form.resetFields();
-      setSelectedFile(null);
       onClose();
     } catch (error) {
       message.error("Failed to update service. Please try again.");
@@ -77,7 +77,7 @@ const EditService: React.FC<EditServiceProps> = ({
   return (
     <Modal
       title="Edit Service"
-      visible={visible}
+      open={visible}
       onCancel={onClose}
       footer={null}
       centered
@@ -110,8 +110,12 @@ const EditService: React.FC<EditServiceProps> = ({
           <Input placeholder="Enter price" type="number" />
         </Form.Item>
 
-        <Form.Item label="File" rules={[{ required: true, message: "Please upload a file!" }]}>
-          <Input type="file" onChange={handleFileChange} /> {/* Listen for file selection */}
+        {/* Thay thế input file bằng FileUploader */}
+        <Form.Item label="Service Image">
+          <FileUploader
+            onUploadSuccess={(url) => setImageUrl(url)}
+            defaultImage={imageUrl}
+          />
         </Form.Item>
 
         <Form.Item>

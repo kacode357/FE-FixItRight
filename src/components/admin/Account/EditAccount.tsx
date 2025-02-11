@@ -1,17 +1,8 @@
 import React, { useEffect, useState } from "react";
-import {
-  Modal,
-  Button,
-  Form,
-  Input,
-  DatePicker,
-  Select,
-  Upload,
-  message,
-} from "antd";
-import { UploadOutlined } from "@ant-design/icons";
+import { Modal, Button, Form, Input, DatePicker, Select, message } from "antd";
 import moment from "moment";
 import { ViewUser, UpdateUser } from "../../../services/api";
+import FileUploader from "../../../utils/FileUploader"; // Import FileUploader
 
 const { Option } = Select;
 
@@ -31,6 +22,9 @@ const EditAccount: React.FC<EditAccountProps> = ({
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [userName, setUserName] = useState<string>("");
+  const [avatarUrl, setAvatarUrl] = useState<string>("");
+  const [cccdFrontUrl, setCccdFrontUrl] = useState<string>("");
+  const [cccdBackUrl, setCccdBackUrl] = useState<string>("");
 
   useEffect(() => {
     if (visible) {
@@ -46,26 +40,15 @@ const EditAccount: React.FC<EditAccountProps> = ({
       const data = await ViewUser(userId);
       setUserName(data.UserName);
 
-      // Format existing file URLs for Ant Design Upload
-      const formatFileList = (fileUrl: string) =>
-        fileUrl
-          ? [
-              {
-                uid: "-1",
-                name: fileUrl.split("/").pop(),
-                status: "done",
-                url: fileUrl,
-              },
-            ]
-          : [];
-
       form.setFieldsValue({
         ...data,
         Birthday: data.Birthday ? moment(data.Birthday, "YYYY-MM-DD") : null,
-        CccdFront: formatFileList(data.CccdFront),
-        CccdBack: formatFileList(data.CccdBack),
-        Avatar: formatFileList(data.Avatar),
       });
+
+      // Lưu URL hình ảnh vào state
+      setAvatarUrl(data.Avatar || "");
+      setCccdFrontUrl(data.CccdFront || "");
+      setCccdBackUrl(data.CccdBack || "");
     } catch (error) {
       message.error("Failed to fetch user details. Please try again.");
     } finally {
@@ -73,29 +56,22 @@ const EditAccount: React.FC<EditAccountProps> = ({
     }
   };
 
-  const normFile = (e: any) => {
-    if (Array.isArray(e)) {
-      return e;
-    }
-    return e?.fileList || [];
-  };
-
   const handleFinish = async (values: any) => {
     try {
       setLoading(true);
-
+  
       const formattedData = {
         Fullname: values.Fullname,
         Gender: values.Gender,
         Birthday: values.Birthday ? values.Birthday.format("YYYY-MM-DD") : "",
         PhoneNumber: values.PhoneNumber,
         Address: values.Address || null,
-        CccdFront: values.CccdFront?.[0]?.originFileObj || null, // Lấy File object
-        CccdBack: values.CccdBack?.[0]?.originFileObj || null, // Lấy File object
-        Avatar: values.Avatar?.[0]?.originFileObj || null, // Lấy File object
-        UserName: userName, // Sử dụng UserName từ state
+        Avatar: avatarUrl || null, // Nếu rỗng, gửi null
+        CccdFront: cccdFrontUrl || null, // Nếu rỗng, gửi null
+        CccdBack: cccdBackUrl || null, // Nếu rỗng, gửi null
+        UserName: userName,
       };
-
+  
       await UpdateUser(userId, formattedData);
       message.success("User information updated successfully!");
       refreshUsers();
@@ -108,6 +84,7 @@ const EditAccount: React.FC<EditAccountProps> = ({
       setLoading(false);
     }
   };
+  
 
   return (
     <Modal
@@ -161,49 +138,26 @@ const EditAccount: React.FC<EditAccountProps> = ({
           <Input />
         </Form.Item>
 
-        <Form.Item
-          name="CccdFront"
-          label="ID Card (Front)"
-          valuePropName="fileList"
-          getValueFromEvent={normFile}
-        >
-          <Upload
-            listType="picture"
-            beforeUpload={() => false}
-            accept="image/*"
-          >
-            <Button icon={<UploadOutlined />}>Upload</Button>
-          </Upload>
+        {/* Thay thế Upload bằng FileUploader */}
+        <Form.Item label="Avatar">
+          <FileUploader
+            onUploadSuccess={(url) => setAvatarUrl(url)}
+            defaultImage={avatarUrl}
+          />
         </Form.Item>
 
-        <Form.Item
-          name="CccdBack"
-          label="ID Card (Back)"
-          valuePropName="fileList"
-          getValueFromEvent={normFile}
-        >
-          <Upload
-            listType="picture"
-            beforeUpload={() => false}
-            accept="image/*"
-          >
-            <Button icon={<UploadOutlined />}>Upload</Button>
-          </Upload>
+        <Form.Item label="ID Card (Front)">
+          <FileUploader
+            onUploadSuccess={(url) => setCccdFrontUrl(url)}
+            defaultImage={cccdFrontUrl}
+          />
         </Form.Item>
 
-        <Form.Item
-          name="Avatar"
-          label="Avatar"
-          valuePropName="fileList"
-          getValueFromEvent={normFile}
-        >
-          <Upload
-            listType="picture"
-            beforeUpload={() => false}
-            accept="image/*"
-          >
-            <Button icon={<UploadOutlined />}>Upload</Button>
-          </Upload>
+        <Form.Item label="ID Card (Back)">
+          <FileUploader
+            onUploadSuccess={(url) => setCccdBackUrl(url)}
+            defaultImage={cccdBackUrl}
+          />
         </Form.Item>
 
         <Form.Item>

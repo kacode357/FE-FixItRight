@@ -12,7 +12,7 @@ import ManagerAccount from '../pages/admin/ManagerAccount';
 
 import Layout1 from '../layout/LayoutHeader';
 import Layout2 from '../layout/LayoutDefault'; 
-import Test from '../pages/test';
+
 import ManagerServices from '../pages/admin/ManagerServices';
 
 const router = createBrowserRouter([
@@ -22,7 +22,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/login" replace /> }, 
       { path: "login", element: <Login /> },
-      { path: "test", element: <Test /> },
+    
       {
         path: "admin",
         element: <Layout1 />, 

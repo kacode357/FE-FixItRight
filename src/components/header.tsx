@@ -64,8 +64,7 @@ const AppHeader: React.FC<AppHeaderProps> = ({ loading }) => {
       }}
     >
       <>
-        <div className="flex-1 flex justify-start"></div>
-        <div className="flex-1 flex justify-center"></div>
+     
         <div className="flex-1 flex justify-end items-center">
           <Badge
             offset={[10, 0]}
