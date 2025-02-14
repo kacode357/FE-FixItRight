@@ -14,6 +14,7 @@ import Layout1 from '../layout/LayoutHeader';
 import Layout2 from '../layout/LayoutDefault'; 
 
 import ManagerServices from '../pages/admin/ManagerServices';
+import Verify from '../pages/Verify';
 
 const router = createBrowserRouter([
   { 
@@ -22,6 +23,8 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Navigate to="/login" replace /> }, 
       { path: "login", element: <Login /> },
+      { path: "verify", element: <Verify /> },
+
     
       {
         path: "admin",
