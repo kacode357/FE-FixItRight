@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
-import { Layout, Card, Row, Col, Statistic } from "antd";
-import { Line } from "@ant-design/charts";
+import { Layout, Row, Col } from "antd";
 import { bookingService } from "../../../services/bookingService";
-import "./Chart.css";
+import CompletedOrdersRevenue from "./CompletedOrdersRevenue";
+import AverageRevenuePerOrder from "./AverageRevenuePerOrder";
+import RevenueByDay from "./RevenueByDay";
+import CompletedOrdersByDay from "./CompletedOrdersByDay";
 
 const { Header, Content } = Layout;
 
@@ -53,28 +55,6 @@ const Chart = () => {
     fetchBookings();
   }, []);
 
-  const revenueLineConfig = {
-    data: weeklyData,
-    xField: "day",
-    yField: "revenue",
-    label: { position: "middle", style: { fill: "#FFFFFF", opacity: 0.6 } },
-    xAxis: { label: { autoHide: true, autoRotate: false } },
-    meta: { day: { alias: "Day of the Week" }, revenue: { alias: "Total Revenue (VND)" } },
-    smooth: true,
-    color: "#1890ff",
-  };
-
-  const countLineConfig = {
-    data: weeklyData,
-    xField: "day",
-    yField: "count",
-    label: { position: "middle", style: { fill: "#FFFFFF", opacity: 0.6 } },
-    xAxis: { label: { autoHide: true, autoRotate: false } },
-    meta: { day: { alias: "Day of the Week" }, count: { alias: "Completed Orders" } },
-    smooth: true,
-    color: "#52c41a",
-  };
-
   return (
     <>
       <Header className="bg-white p-4">
@@ -83,40 +63,26 @@ const Chart = () => {
       <Content className="p-6 bg-white rounded-lg">
         <Row gutter={[16, 16]} className="mb-6">
           <Col span={12}>
-            <Card bordered={false} className="bg-green-50 hover:bg-green-100 transition" loading={loading}>
-              <Statistic
-                title="Completed Orders Revenue"
-                value={completedRevenue}
-                prefix="VND"
-                className="text-green-600"
-              />
-            </Card>
+            <CompletedOrdersRevenue completedRevenue={completedRevenue} loading={loading} />
           </Col>
           <Col span={12}>
-            <Card bordered={false} className="bg-yellow-50 hover:bg-yellow-100 transition" loading={loading}>
-              <Statistic
-                title="Average Revenue per Completed Order"
-                value={bookingData.length > 0 ? (completedRevenue / bookingData.length).toFixed(2) : 0}
-                prefix="VND"
-                className="text-yellow-600"
-              />
-            </Card>
+            <AverageRevenuePerOrder
+              completedRevenue={completedRevenue}
+              totalOrders={bookingData.length}
+              loading={loading}
+            />
           </Col>
         </Row>
 
         <Row gutter={[16, 16]}>
           <Col span={24}>
-            <Card title="Revenue by Day of the Week" loading={loading}>
-              <Line {...revenueLineConfig} height={400} />
-            </Card>
+            <RevenueByDay weeklyData={weeklyData} loading={loading} />
           </Col>
         </Row>
 
         <Row gutter={[16, 16]} className="mt-6">
           <Col span={24}>
-            <Card title="Completed Orders by Day of the Week" loading={loading}>
-              <Line {...countLineConfig} height={400} />
-            </Card>
+            <CompletedOrdersByDay weeklyData={weeklyData} loading={loading} />
           </Col>
         </Row>
       </Content>
