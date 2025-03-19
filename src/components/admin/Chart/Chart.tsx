@@ -4,6 +4,7 @@ import { bookingService } from "../../../services/bookingService";
 import RevenueByDay from "./RevenueByDay";
 import CompletedOrdersByDay from "./CompletedOrdersByDay";
 import { GetAllUsers } from "../../../services/api";
+import BookingStatusFilter from "./BookingStatusFilter"; 
 
 const { Header, Content } = Layout;
 
@@ -31,6 +32,7 @@ const Chart = () => {
         const completedRev = completedBookings.reduce((sum, booking) => {
           return sum + (booking?.Service?.Price || 0);
         }, 0);
+        console.log("Completed Revenue:", completedRev);
         setCompletedRevenue(completedRev);
 
         const dayRevenueMap: { [key: string]: { revenue: number; count: number } } = {};
@@ -76,6 +78,10 @@ const Chart = () => {
       </Header>
       <Content className="p-6 bg-white rounded-lg">
         {error && <div style={{ color: "red", marginBottom: 16 }}>{error}</div>}
+        
+        {/* BookingStatusFilter Component added here */}
+        <BookingStatusFilter />
+        
         <Row gutter={[16, 16]} className="mb-6">
           <Col span={8}>
             <Card loading={loading}>
