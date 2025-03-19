@@ -3,9 +3,9 @@ import { Card, Statistic } from "antd";
 import { bookingService } from "../../../services/bookingService";
 
 type CompletedOrdersRevenueProps = {
-    loading: boolean;
-    completedRevenue: number;
-  };
+  loading: boolean;
+  completedRevenue: number;
+};
 
 const CompletedOrdersRevenue: React.FC<CompletedOrdersRevenueProps> = ({ loading }) => {
   const [completedRevenue, setCompletedRevenue] = useState<number>(0);
@@ -26,7 +26,7 @@ const CompletedOrdersRevenue: React.FC<CompletedOrdersRevenueProps> = ({ loading
 
   return (
     <Card bordered={false} className="bg-green-50 hover:bg-green-100 transition" loading={loading}>
-      <Statistic title="Completed Orders Revenue" value={completedRevenue} prefix="VND" className="text-green-600" />
+      <Statistic title="Total revenue" value={completedRevenue} suffix="VND" className="text-green-600" />
     </Card>
   );
 };
