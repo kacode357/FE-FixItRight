@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Select, Row, Col, Card, Statistic, Spin } from "antd";
+import { Select, Row, Col, Card, Statistic } from "antd";
 import { bookingService } from "../../../services/bookingService";
 
 const { Option } = Select;
@@ -31,6 +31,10 @@ const BookingStatusFilter: React.FC = () => {
   const handleStatusChange = (value: string) => {
     setStatus(value);
   };
+
+  if (error) {
+    return;
+  }
 
   return (
     <Card title="Booking Status Filter" bordered={false} className="p-4">

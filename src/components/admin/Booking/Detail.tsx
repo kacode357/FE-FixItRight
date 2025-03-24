@@ -9,7 +9,7 @@ interface DetailBookingProps {
   refreshBookings: () => void;
 }
 
-const DetailBooking: React.FC<DetailBookingProps> = ({ visible, bookingId, onClose, refreshBookings }) => {
+const DetailBooking: React.FC<DetailBookingProps> = ({ visible, bookingId, onClose }) => {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
   const [booking, setBooking] = useState<Booking | null>(null);
