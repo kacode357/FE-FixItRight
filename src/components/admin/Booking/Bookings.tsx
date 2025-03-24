@@ -34,7 +34,7 @@ const Bookings = () => {
             .map((booking: Booking) => booking.Service.Category)
         )
       );
-      setCategories(uniqueCategories);
+      setCategories(uniqueCategories as Category[]);
     } catch (error: any) {
       message.error("Không thể lấy danh sách đặt chỗ");
       setError(error.message || "Lỗi không xác định");
@@ -78,7 +78,6 @@ const Bookings = () => {
     { title: "ID", dataIndex: "Id", key: "Id" },
     { title: "Customer ID", dataIndex: "CustomerId", key: "CustomerId" },
     { title: "Mechanist ID", dataIndex: "MechanistId", key: "MechanistId" },
-    { title: "Service ID", dataIndex: "ServiceId", key: "ServiceId" },
     {
       title: "Image",
       dataIndex: ["Service", "Image"],

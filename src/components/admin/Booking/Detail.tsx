@@ -16,49 +16,53 @@ const DetailBooking: React.FC<DetailBookingProps> = ({ visible, bookingId, onClo
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (visible && bookingId) {
-      setLoading(true);
-      setError(null);
-      form.resetFields();
-      console.log("Fetching booking with ID:", bookingId); // Debug log
-      bookingService
-        .getBookingById(bookingId)
-        .then((data) => {
-          if (!data || typeof data !== "object" || !data.Id) {
-            throw new Error("Dữ liệu đặt chỗ không hợp lệ từ API");
-          }
+    const fetchData = async () => {
+      if (visible && bookingId) {
+        setLoading(true);
+        setError(null);
+        try {
+          const data = await bookingService.getBookingById(bookingId);
           setBooking(data);
-          form.setFieldsValue({
-            id: data.Id || "",
-            customerId: data.CustomerId || "",
-            mechanistId: data.MechanistId || "",
-            serviceId: data.ServiceId || "",
-            image: data.Service?.Image || "",
-            name: data.Service?.Name || "",
-            description: data.Service?.Description || "",
-            price: data.Service?.Price || 0,
-            category: data.Service?.Category?.Name || "",
-            rating: data.Rating || 0,
-            workingDate: data.WorkingDate || "",
-            address: data.Address || "",
-            progressTime: data.ProgressTime || "",
-            status: data.Status || "",
-            bookingDate: data.BookingDate || "",
-            note: data.Note || "",
-          });
-        })
-        .catch((err) => {
-          const errorMessage = err.response?.data?.Message || err.message || "Không thể tải chi tiết đặt chỗ";
-          message.error(errorMessage);
-          setError(errorMessage);
+
+          if (data && data.Id) {
+            setBooking(data);
+
+            form.setFieldsValue({
+              id: data.Id,
+              customerId: data.CustomerId,
+              mechanistId: data.MechanistId,
+              serviceId: data.ServiceId,
+              image: data.Service?.Image,
+              name: data.Service?.Name,
+              description: data.Service?.Description,
+              price: data.Service?.Price,
+              category: data.Service?.Category?.Name,
+              rating: data.Rating,
+              workingDate: data.WorkingDate,
+              address: data.Address,
+              progressTime: data.ProgressTime,
+              status: data.Status,
+              bookingDate: data.BookingDate,
+              note: data.Note,
+            });
+          } else {
+            throw new Error("Không tìm thấy dữ liệu đặt chỗ hoặc dữ liệu sai cấu trúc");
+          }
+        } catch (err: any) {
+          message.error("Không thể lấy chi tiết đặt chỗ");
+          setError(err.message || "Lỗi không xác định");
           setBooking(null);
-        })
-        .finally(() => setLoading(false));
-    } else {
-      form.resetFields();
-      setBooking(null);
-      setError(null);
-    }
+        } finally {
+          setLoading(false);
+        }
+      } else {
+        form.resetFields();
+        setBooking(null);
+        setError(null);
+      }
+    };
+
+    fetchData();
   }, [visible, bookingId, form]);
 
   const handleClose = () => {

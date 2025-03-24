@@ -26,14 +26,16 @@ interface User {
   Active: boolean;
 }
 
-interface MetaData {
-  TotalPages: number;
-  CurrentPage: number;
-}
-
 const Account = () => {
   const [users, setUsers] = useState<User[]>([]);
-  const [metaData, setMetaData] = useState<MetaData>({ TotalPages: 0, CurrentPage: 1 });
+  const [metaData, setMetaData] = useState<MetaData>({
+    TotalPages: 0,
+    CurrentPage: 1,
+    PageSize: 50,
+    TotalCount: 0,
+    HasPrevious: false,
+    HasNext: false,
+  });
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [isViewModalVisible, setIsViewModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
@@ -41,7 +43,7 @@ const Account = () => {
   const [searchName, setSearchName] = useState<string | null>(null);
   const [roleFilter, setRoleFilter] = useState<string | null>(null);
 
-  const fetchUsers = debounce(async (page: number = 1) => {
+  const fetchUsers = async (page: number = 1, size: number = metaData.PageSize) => {
     try {
       const response = await GetAllUsers({
         Role: roleFilter,
@@ -49,17 +51,19 @@ const Account = () => {
         IsVerified: false,
         SearchName: searchName,
         PageNumber: page,
-        PageSize: 5,
+        PageSize: size,
       });
-
-      console.log("Fetched Users:", response.Data);
 
       setUsers(response.Data);
       setMetaData(response.MetaData);
     } catch (error) {
       console.error("Error fetching users:", error);
     }
-  }, 0);
+  };
+
+  const debouncedSearch = debounce((value: string) => {
+    setSearchName(value || null);
+  }, 300);
 
   const refreshUsers = () => fetchUsers(metaData.CurrentPage);
 
@@ -67,7 +71,6 @@ const Account = () => {
     fetchUsers(metaData.CurrentPage);
   }, [searchName, roleFilter]);
 
-  const handleSearch = (value: string) => setSearchName(value || null);
   const handleRoleFilterChange = (value: string | undefined) => setRoleFilter(value || null);
 
   const handleStatusToggle = async (id: string) => {
@@ -90,11 +93,7 @@ const Account = () => {
       dataIndex: "Avatar",
       key: "avatar",
       render: (avatar: string) => (
-        <img
-          src={avatar}
-          alt="Avatar"
-          style={{ width: 50, height: 50, borderRadius: "50%", objectFit: "cover" }}
-        />
+        <img src={avatar} alt="Avatar" style={{ width: 50, height: 50, borderRadius: "50%", objectFit: "cover" }} />
       ),
     },
     {
@@ -129,20 +128,13 @@ const Account = () => {
       title: "Birthday",
       dataIndex: "Birthday",
       key: "birthday",
-      render: (birthday: string) =>
-        birthday === "0001-01-01" ? "N/A" : dayjs(birthday).format("DD/MM/YYYY"),
+      render: (birthday: string) => (birthday === "0001-01-01" ? "N/A" : dayjs(birthday).format("DD/MM/YYYY")),
     },
     {
       title: "Roles",
       dataIndex: "Roles",
       key: "roles",
       render: (roles: string[]) => roles.join(", "),
-    },
-    {
-      title: "Verification",
-      dataIndex: "IsVerified",
-      key: "isVerified",
-      render: (isVerified: boolean) => (isVerified ? "Verified" : "Not Verified"),
     },
     {
       title: "Status",
@@ -172,15 +164,10 @@ const Account = () => {
     <div style={{ position: "relative", left: 0 }}>
       <Row gutter={16} style={{ marginBottom: 10 }}>
         <Col span={6}>
-          <Search placeholder="Search by name" onSearch={handleSearch} enterButton allowClear />
+          <Search placeholder="Search by name" onSearch={debouncedSearch} enterButton allowClear />
         </Col>
         <Col span={10}>
-          <Select
-            placeholder="Filter by role"
-            style={{ width: 130 }}
-            onChange={handleRoleFilterChange}
-            allowClear
-          >
+          <Select placeholder="Filter by role" style={{ width: 130 }} onChange={handleRoleFilterChange} allowClear>
             {["Admin", "Customer", "Mechanist"].map((role) => (
               <Option key={role} value={role}>
                 {role}
@@ -200,19 +187,37 @@ const Account = () => {
         rowKey={(record) => record.Id}
         pagination={{
           current: metaData.CurrentPage,
-          pageSize: 5,
-          total: metaData.TotalPages * 5,
-          showSizeChanger: false,
+          pageSize: metaData.PageSize,
+          total: metaData.TotalCount,
+          showSizeChanger: true,
+          pageSizeOptions: ["5", "10", "15", "20", "50"],
         }}
-        onChange={(pagination) => fetchUsers(pagination.current || 1)}
+        onChange={(pagination) => {
+          const { current = 1, pageSize: newSize = metaData.PageSize } = pagination;
+          fetchUsers(current, newSize);
+        }}
       />
 
       {selectedUserId && (
-        <ViewAccount userId={selectedUserId} visible={isViewModalVisible} onClose={() => setIsViewModalVisible(false)} />
+        <ViewAccount
+          userId={selectedUserId}
+          visible={isViewModalVisible}
+          onClose={() => setIsViewModalVisible(false)}
+        />
       )}
-      <AddUser visible={isAddModalVisible} onClose={() => setIsAddModalVisible(false)} refreshUsers={refreshUsers} onAddUser={(values) => console.log(values)} />
+      <AddUser
+        visible={isAddModalVisible}
+        onClose={() => setIsAddModalVisible(false)}
+        refreshUsers={refreshUsers}
+        onAddUser={(values) => console.log(values)}
+      />
       {selectedUserId && (
-        <EditUser userId={selectedUserId} visible={isEditModalVisible} onClose={() => setIsEditModalVisible(false)} refreshUsers={refreshUsers} />
+        <EditUser
+          userId={selectedUserId}
+          visible={isEditModalVisible}
+          onClose={() => setIsEditModalVisible(false)}
+          refreshUsers={refreshUsers}
+        />
       )}
     </div>
   );

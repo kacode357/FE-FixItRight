@@ -5,7 +5,7 @@ import { bookingService } from "../../../services/bookingService";
 const { Option } = Select;
 
 const BookingStatusFilter: React.FC = () => {
-  const [status, setStatus] = useState<string>("completed"); 
+  const [status, setStatus] = useState<string>("completed");
   const [bookingData, setBookingData] = useState<Booking[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,12 +36,7 @@ const BookingStatusFilter: React.FC = () => {
     <Card title="Booking Status Filter" bordered={false} className="p-4">
       <Row gutter={[16, 16]}>
         <Col span={12}>
-          <Select
-            defaultValue={status}
-            style={{ width: "100%" }}
-            onChange={handleStatusChange}
-            loading={loading}
-          >
+          <Select defaultValue={status} style={{ width: "100%" }} onChange={handleStatusChange} loading={loading}>
             <Option value="Completed">Completed</Option>
             <Option value="Cancelled">Cancelled</Option>
             <Option value="Pending">Pending</Option>
@@ -60,7 +55,7 @@ const BookingStatusFilter: React.FC = () => {
         </Col>
       </Row>
 
-      {loading ? (
+      {/* {loading ? (
         <Spin size="large" style={{ display: "block", marginTop: 16 }} />
       ) : error ? (
         <div style={{ color: "red", marginTop: 16 }}>{error}</div>
@@ -84,7 +79,7 @@ const BookingStatusFilter: React.FC = () => {
             </Col>
           ))}
         </Row>
-      )}
+      )} */}
     </Card>
   );
 };

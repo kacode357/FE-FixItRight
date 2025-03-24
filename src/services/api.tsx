@@ -40,21 +40,23 @@ const ViewUser = async (userId: string) => {
   return response.data;
 };
 
-const UpdateUser = async (userId: string, data: {
-  Fullname: string;
-  Gender: string;
-  Birthday: string;
-  UserName: string;
-  Address?: string | null;
-  PhoneNumber: string;
-  CccdFront?: string | null; // Đảm bảo nhận null nếu không có ảnh
-  CccdBack?: string | null; // Đảm bảo nhận null nếu không có ảnh
-  Avatar?: string | null; // Đảm bảo nhận null nếu không có ảnh
-}) => {
+const UpdateUser = async (
+  userId: string,
+  data: {
+    Fullname: string;
+    Gender: string;
+    Birthday: string;
+    UserName: string;
+    Address?: string | null;
+    PhoneNumber: string;
+    CccdFront?: string | null; // Đảm bảo nhận null nếu không có ảnh
+    CccdBack?: string | null; // Đảm bảo nhận null nếu không có ảnh
+    Avatar?: string | null; // Đảm bảo nhận null nếu không có ảnh
+  }
+) => {
   const response = await defaultAxiosInstance.put(`/api/users/${userId}`, data);
   return response.data;
 };
-
 
 const AddAccountCustomerApi = async (data: {
   Fullname: string;
@@ -93,11 +95,7 @@ const GetAllRepairServices = async (params: {
   return response.data;
 };
 
-const AddRepairServiceApi = async (data: {
-  Name: string;
-  Description: string;
-  Price: number;
-}) => {
+const AddRepairServiceApi = async (data: { Name: string; Description: string; Price: number }) => {
   const URL_API = "/api/repair-services";
   const response = await axiosWithoutLoading.post(URL_API, data);
   return response.data;
@@ -115,11 +113,14 @@ const GetRepairServiceById = async (serviceId: string) => {
   return response.data;
 };
 
-const EditRepairServiceApi = async (serviceId: string, data: {
-  Name: string;
-  Description: string;
-  Price: number;
-}) => {
+const EditRepairServiceApi = async (
+  serviceId: string,
+  data: {
+    Name: string;
+    Description: string;
+    Price: number;
+  }
+) => {
   const URL_API = `/api/repair-services/${serviceId}`;
   const response = await axiosWithoutLoading.put(URL_API, data);
   return response.data;
