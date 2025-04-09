@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { Table, Button, Input, Select, Row, Col, Tooltip, Switch } from "antd";
 import { EyeOutlined, EditOutlined } from "@ant-design/icons";
 import { GetAllUsers } from "../../../services/api";
@@ -7,10 +7,19 @@ import AddUser from "./AddAccount";
 import ViewAccount from "./ViewAccount";
 import debounce from "lodash.debounce";
 import deleteAccount from "./DeleteAccount";
-import dayjs from "dayjs"; // Thêm thư viện dayjs để format ngày tháng
+import dayjs from "dayjs";
 
 const { Search } = Input;
 const { Option } = Select;
+
+interface MetaData {
+  TotalPages: number;
+  CurrentPage: number;
+  PageSize: number;
+  TotalCount: number;
+  HasPrevious: boolean;
+  HasNext: boolean;
+}
 
 interface User {
   Id: string;
@@ -43,7 +52,7 @@ const Account = () => {
   const [searchName, setSearchName] = useState<string | null>(null);
   const [roleFilter, setRoleFilter] = useState<string | null>(null);
 
-  const fetchUsers = async (page: number = 1, size: number = metaData.PageSize) => {
+  const fetchUsers = async (page: number = metaData.CurrentPage, size: number = metaData.PageSize) => {
     try {
       const response = await GetAllUsers({
         Role: roleFilter,
@@ -61,17 +70,36 @@ const Account = () => {
     }
   };
 
-  const debouncedSearch = debounce((value: string) => {
-    setSearchName(value || null);
-  }, 300);
-
   const refreshUsers = () => fetchUsers(metaData.CurrentPage);
+
+  const debouncedSearch = useCallback(
+    debounce((value: string) => {
+      setSearchName(value || null);
+      setMetaData((prev) => ({
+        ...prev,
+        CurrentPage: 1,
+      }));
+    }, 300),
+    []
+  );
+
+  useEffect(() => {
+    return () => {
+      debouncedSearch.cancel();
+    };
+  }, [debouncedSearch]);
 
   useEffect(() => {
     fetchUsers(metaData.CurrentPage);
-  }, [searchName, roleFilter]);
+  }, [searchName, roleFilter, metaData.CurrentPage]);
 
-  const handleRoleFilterChange = (value: string | undefined) => setRoleFilter(value || null);
+  const handleRoleFilterChange = (value: string | undefined) => {
+    setRoleFilter(value || null);
+    setMetaData((prev) => ({
+      ...prev,
+      CurrentPage: 1,
+    }));
+  };
 
   const handleStatusToggle = async (id: string) => {
     await deleteAccount(id, refreshUsers);
@@ -93,7 +121,16 @@ const Account = () => {
       dataIndex: "Avatar",
       key: "avatar",
       render: (avatar: string) => (
-        <img src={avatar} alt="Avatar" style={{ width: 50, height: 50, borderRadius: "50%", objectFit: "cover" }} />
+        <img
+          src={avatar}
+          alt="Avatar"
+          style={{
+            width: 50,
+            height: 50,
+            borderRadius: "50%",
+            objectFit: "cover",
+          }}
+        />
       ),
     },
     {
@@ -106,12 +143,6 @@ const Account = () => {
       title: "Username",
       dataIndex: "UserName",
       key: "userName",
-    },
-    {
-      title: "Phone",
-      dataIndex: "PhoneNumber",
-      key: "phoneNumber",
-      render: (phone: string | null) => phone || "-",
     },
     {
       title: "Address",
@@ -164,7 +195,7 @@ const Account = () => {
     <div style={{ position: "relative", left: 0 }}>
       <Row gutter={16} style={{ marginBottom: 10 }}>
         <Col span={6}>
-          <Search placeholder="Search by name" onSearch={debouncedSearch} enterButton allowClear />
+          <Search placeholder="Search by name" onChange={(e) => debouncedSearch(e.target.value)} allowClear />
         </Col>
         <Col span={10}>
           <Select placeholder="Filter by role" style={{ width: 130 }} onChange={handleRoleFilterChange} allowClear>
@@ -181,6 +212,7 @@ const Account = () => {
           </Button>
         </Col>
       </Row>
+
       <Table
         columns={columns}
         dataSource={users}
@@ -194,7 +226,11 @@ const Account = () => {
         }}
         onChange={(pagination) => {
           const { current = 1, pageSize: newSize = metaData.PageSize } = pagination;
-          fetchUsers(current, newSize);
+          setMetaData((prev) => ({
+            ...prev,
+            CurrentPage: current,
+            PageSize: newSize,
+          }));
         }}
       />
 

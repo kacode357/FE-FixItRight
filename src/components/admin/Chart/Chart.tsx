@@ -4,7 +4,10 @@ import { bookingService } from "../../../services/bookingService";
 import RevenueByDay from "./RevenueByDay";
 import CompletedOrdersByDay from "./CompletedOrdersByDay";
 import { GetAllUsers } from "../../../services/api";
-import BookingStatusFilter from "./BookingStatusFilter"; 
+import BookingStatusFilter from "./BookingStatusFilter";
+import { transactionService } from "../../../services/transactionService";
+import MonthlyRevenueChart from "./MonthlyRevenueChart";
+import MonthlyOrdersChart from "./MonthlyOrdersChart";
 
 const { Header, Content } = Layout;
 
@@ -13,6 +16,8 @@ const Chart = () => {
   const [weeklyData, setWeeklyData] = useState<{ day: string; revenue: number; count: number }[]>([]);
   const [completedRevenue, setCompletedRevenue] = useState<number>(0);
   const [totalUsers, setTotalUsers] = useState<number>(0);
+  const [totalTransactions, setTotalTransactions] = useState<number>(0);
+  const [totalTransactionMoney, setTotalTransactionMoney] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null); // Thêm state lỗi
 
@@ -60,6 +65,12 @@ const Chart = () => {
           PageSize: 1000,
         });
         setTotalUsers(usersResponse?.Data?.length || 0);
+
+        const totalTrans = await transactionService.getTotalTransactions();
+        setTotalTransactions(totalTrans.data);
+
+        const totalMoney = await transactionService.getTotalMoney();
+        setTotalTransactionMoney(totalMoney.data);
       } catch (error) {
         console.error("Error fetching data:", error);
         setError("Failed to load data. Please try again later.");
@@ -78,10 +89,10 @@ const Chart = () => {
       </Header>
       <Content className="p-6 bg-white rounded-lg">
         {error && <div style={{ color: "red", marginBottom: 16 }}>{error}</div>}
-        
+
         {/* BookingStatusFilter Component added here */}
         <BookingStatusFilter />
-        
+
         <Row gutter={[16, 16]} className="mb-6">
           <Col span={8}>
             <Card loading={loading}>
@@ -107,6 +118,22 @@ const Chart = () => {
               <Statistic title="Total Users" value={totalUsers} valueStyle={{ color: "#faad14" }} />
             </Card>
           </Col>
+          <Col span={8}>
+            <Card loading={loading}>
+              <Statistic title="Total Transactions" value={totalTransactions} valueStyle={{ color: "#722ed1" }} />
+            </Card>
+          </Col>
+
+          <Col span={8}>
+            <Card loading={loading}>
+              <Statistic
+                title="Total Transaction Amount (VND)"
+                value={totalTransactionMoney}
+                precision={0}
+                valueStyle={{ color: "#d4380d" }}
+              />
+            </Card>
+          </Col>
         </Row>
 
         <Row gutter={[16, 16]}>
@@ -115,6 +142,12 @@ const Chart = () => {
           </Col>
           <Col span={12}>
             <CompletedOrdersByDay weeklyData={weeklyData} loading={loading} />
+          </Col>
+          <Col span={12}>
+            <MonthlyRevenueChart />
+          </Col>
+          <Col span={12}>
+            <MonthlyOrdersChart />
           </Col>
         </Row>
       </Content>

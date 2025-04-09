@@ -46,12 +46,11 @@ const UpdateUser = async (
     Fullname: string;
     Gender: string;
     Birthday: string;
-    UserName: string;
-    Address?: string | null;
-    PhoneNumber: string;
-    CccdFront?: string | null; // Đảm bảo nhận null nếu không có ảnh
-    CccdBack?: string | null; // Đảm bảo nhận null nếu không có ảnh
-    Avatar?: string | null; // Đảm bảo nhận null nếu không có ảnh
+    Address: string;
+    Email: string;
+    Avatar?:
+      | string
+      | "https://media.istockphoto.com/vectors/default-profile-picture-avatar-photo-placeholder-vector-illustration-vector-id1223671392?k=6&m=1223671392&s=170667a&w=0&h=zP3l7WJinOFaGb2i1F4g8IS2ylw0FlIaa6x3tP9sebU=";
   }
 ) => {
   const response = await defaultAxiosInstance.put(`/api/users/${userId}`, data);

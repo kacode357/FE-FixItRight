@@ -1,6 +1,13 @@
 import React from "react";
 import { Layout, Menu } from "antd";
-import { BarChartOutlined, BookOutlined, FilterOutlined, SettingOutlined, UserOutlined } from "@ant-design/icons"; // Updated icons
+import {
+  BarChartOutlined,
+  BookOutlined,
+  FilterOutlined,
+  SettingOutlined,
+  TransactionOutlined,
+  UserOutlined,
+} from "@ant-design/icons"; // Updated icons
 import { Link, useLocation } from "react-router-dom";
 import logo from "../assets/logo-sidebar-1.png";
 import logoCollapsed from "../assets/logo-sidebar-2.png";
@@ -18,6 +25,7 @@ const menuConfig = [
   { path: "/admin/manager-services", icon: <SettingOutlined />, label: "Service" }, // Updated icon
   { path: "/admin/manage-categories", icon: <FilterOutlined />, label: "Categories" }, // Updated icon
   { path: "/admin/manage-booking", icon: <BookOutlined />, label: "Booking" }, // Updated icon
+  { path: "/admin/manage-transactions", icon: <TransactionOutlined />, label: "Transactions" }, // Updated icon
 ];
 
 const Sidebar: React.FC<SidebarProps> = ({ collapsed, onCollapse }) => {

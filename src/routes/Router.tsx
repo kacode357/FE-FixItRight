@@ -18,6 +18,7 @@ import Verify from "../pages/Verify";
 import ManageCategories from "../pages/admin/ManageCategories";
 import ManageBooking from "../pages/admin/ManageBooking";
 import Dashboard from "../pages/admin/Dashboard";
+import ManageTransaction from "../pages/admin/ManageTransaction";
 
 const router = createBrowserRouter([
   {
@@ -47,6 +48,10 @@ const router = createBrowserRouter([
           {
             path: "manage-booking",
             element: <PrivateRoute element={ManageBooking} allowedRoles={[ROLES.ADMIN]} />,
+          },
+          {
+            path: "manage-transactions",
+            element: <PrivateRoute element={ManageTransaction} allowedRoles={[ROLES.ADMIN]} />,
           },
           {
             path: "dashboard",

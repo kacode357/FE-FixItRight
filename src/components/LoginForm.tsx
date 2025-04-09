@@ -21,13 +21,13 @@ const LoginForm: React.FC = () => {
         UserName: values.username,
         Password: values.password,
       });
-      console.log("x",response);
+      console.log("x", response);
       if (response) {
         localStorage.setItem("token", response.AccessToken);
-      
+
         const resDataLogin = await GetCurrentLogin();
-      
-        console.log("resDataLogin",resDataLogin);
+
+        console.log("resDataLogin", resDataLogin);
         setAuth({
           isAuthenticated: true,
           user: {
@@ -35,16 +35,14 @@ const LoginForm: React.FC = () => {
             imgUrl: resDataLogin?.Avatar,
             email: resDataLogin?.IsVerified,
             name: resDataLogin?.Fullname,
-            role: resDataLogin.Roles[0]
+            role: resDataLogin.Roles[0],
           },
         });
-        console.log("resDataLoginxxxx>",resDataLogin.Roles[0]);
+        console.log("resDataLoginxxxx>", resDataLogin.Roles[0]);
         if (resDataLogin.Roles[0] === "Admin") {
-         
-          navigate("/admin/manager-account");
-        } 
+          navigate("/admin/dashboard");
+        }
         setLoading(false);
-
       }
     } catch (error) {
       setLoading(false);
@@ -83,27 +81,15 @@ const LoginForm: React.FC = () => {
             <Lottie options={defaultOptions} height={30} width={30} />
           </div>
         </div>
-        <div className="text-left text-sm text-gray-500 mt-2">
-          Please log in here
-        </div>
+        <div className="text-left text-sm text-gray-500 mt-2">Please log in here</div>
       </div>
 
       {/* Login Form */}
       <div className="w-full max-w-md mt-5">
-        <Form
-          name="login_form"
-          onFinish={onFinish}
-          layout="vertical"
-          className="space-y-4"
-        >
-          <Form.Item
-            name="username"
-            rules={[{ required: true, message: "Please input your username!" }]}
-          >
+        <Form name="login_form" onFinish={onFinish} layout="vertical" className="space-y-4">
+          <Form.Item name="username" rules={[{ required: true, message: "Please input your username!" }]}>
             <div className="relative border-2 border-[#4A628A] rounded-lg p-2 text-xs">
-              <span className="absolute -top-3 left-3 bg-white px-1 text-[#4A628A] text-xs">
-                Username
-              </span>
+              <span className="absolute -top-3 left-3 bg-white px-1 text-[#4A628A] text-xs">Username</span>
               <input
                 type="text"
                 className="w-full border-none focus:outline-none ml-2 text-black text-sm"
@@ -112,14 +98,9 @@ const LoginForm: React.FC = () => {
             </div>
           </Form.Item>
 
-          <Form.Item
-            name="password"
-            rules={[{ required: true, message: "Please input your password!" }]}
-          >
+          <Form.Item name="password" rules={[{ required: true, message: "Please input your password!" }]}>
             <div className="relative border-2 border-[#4A628A] rounded-lg p-2 text-xs mt-2">
-              <span className="absolute -top-3 left-3 bg-white px-1 text-[#4A628A] text-xs">
-                Password
-              </span>
+              <span className="absolute -top-3 left-3 bg-white px-1 text-[#4A628A] text-xs">Password</span>
               <input
                 type={showPassword ? "text" : "password"}
                 className="w-full border-none focus:outline-none ml-2 text-black text-sm"
@@ -138,10 +119,7 @@ const LoginForm: React.FC = () => {
           </Form.Item>
 
           <div className="text-right mb-2">
-            <a
-              href="/forgot-password"
-              className="text-black hover:text-gray-700 text-sm"
-            >
+            <a href="/forgot-password" className="text-black hover:text-gray-700 text-sm">
               Forgot Password?
             </a>
           </div>
