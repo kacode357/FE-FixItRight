@@ -6,13 +6,7 @@ export const transactionService = {
       `/api/transactions/get-transactions?PageNumber=${PageNumber}&PageSize=${PageSize}`
     );
 
-    const transactions = res.data?.Data ?? [];
-    const total = res.data?.MetaData?.TotalCount ?? 0;
-
-    return {
-      data: transactions,
-      total,
-    };
+    return res.data;
   },
 
   getTotalTransactions: async () => {

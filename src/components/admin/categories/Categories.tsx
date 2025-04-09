@@ -21,6 +21,8 @@ const Categories = () => {
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false); // State cho modal xóa
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   const fetchCategories = async () => {
     setLoading(true);
@@ -64,6 +66,11 @@ const Categories = () => {
 
   const columns = [
     {
+      title: "No.",
+      key: "index",
+      render: (_: any, __: any, index: number) => (currentPage - 1) * pageSize + index + 1,
+    },
+    {
       title: "Category Name",
       dataIndex: "Name",
       key: "Name",
@@ -106,7 +113,24 @@ const Categories = () => {
       {loading ? (
         <Spin size="large" />
       ) : (
-        <Table columns={columns} dataSource={filteredData} rowKey="Id" pagination={false} className="mb-4" />
+        <Table
+          columns={columns}
+          dataSource={filteredData.slice((currentPage - 1) * pageSize, currentPage * pageSize)}
+          rowKey="Id"
+          loading={loading}
+          pagination={{
+            current: currentPage,
+            pageSize,
+            total: filteredData.length,
+            showSizeChanger: true,
+            pageSizeOptions: ["5", "10", "20", "50"],
+            onChange: (page, size) => {
+              setCurrentPage(page);
+              setPageSize(size || 10);
+            },
+          }}
+          className="mb-4"
+        />
       )}
       <AddCategoryModal
         visible={isAddModalVisible}

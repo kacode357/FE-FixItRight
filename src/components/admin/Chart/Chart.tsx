@@ -3,8 +3,7 @@ import { Layout, Row, Col, Card, Statistic } from "antd";
 import { bookingService } from "../../../services/bookingService";
 import RevenueByDay from "./RevenueByDay";
 import CompletedOrdersByDay from "./CompletedOrdersByDay";
-import { GetAllUsers } from "../../../services/api";
-import BookingStatusFilter from "./BookingStatusFilter";
+import { getTotalUsers } from "../../../services/api";
 import { transactionService } from "../../../services/transactionService";
 import MonthlyRevenueChart from "./MonthlyRevenueChart";
 import MonthlyOrdersChart from "./MonthlyOrdersChart";
@@ -19,7 +18,7 @@ const Chart = () => {
   const [totalTransactions, setTotalTransactions] = useState<number>(0);
   const [totalTransactionMoney, setTotalTransactionMoney] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null); // Thêm state lỗi
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -27,26 +26,26 @@ const Chart = () => {
         setLoading(true);
         setError(null);
 
-        const completedBookings: Booking[] = await bookingService.getAllBookings("Completed", 1, 1000);
-        console.log("Completed Bookings:", completedBookings);
-        if (!completedBookings || completedBookings.length === 0) {
-          setError("No completed bookings found.");
-        }
-        setBookingData(completedBookings || []);
+        // Lấy danh sách booking (không lọc status)
+        const { Data: bookings } = await bookingService.getAllBookings("Completed", 1, 1000);
+        setBookingData(bookings || []);
 
-        const completedRev = completedBookings.reduce((sum, booking) => {
+        // Tính tổng doanh thu
+        const totalRevenue = bookings.reduce((sum: number, booking: Booking) => {
           return sum + (booking?.Service?.Price || 0);
         }, 0);
-        console.log("Completed Revenue:", completedRev);
-        setCompletedRevenue(completedRev);
+        setCompletedRevenue(totalRevenue);
 
+        // Tính revenue + số đơn theo thứ trong tuần
         const dayRevenueMap: { [key: string]: { revenue: number; count: number } } = {};
-        (completedBookings || []).forEach((booking) => {
-          const date = new Date(booking.WorkingDate);
-          const day = date.toLocaleString("en-US", { weekday: "long" });
+        bookings.forEach((booking: Booking) => {
+          const date: Date = new Date(booking.WorkingDate);
+          const day: string = date.toLocaleString("en-US", { weekday: "long" });
+
           if (!dayRevenueMap[day]) {
             dayRevenueMap[day] = { revenue: 0, count: 0 };
           }
+
           dayRevenueMap[day].revenue += booking?.Service?.Price || 0;
           dayRevenueMap[day].count += 1;
         });
@@ -58,14 +57,11 @@ const Chart = () => {
         }));
         setWeeklyData(weekly);
 
-        const usersResponse = await GetAllUsers({
-          Active: true,
-          IsVerified: true,
-          PageNumber: 1,
-          PageSize: 1000,
-        });
-        setTotalUsers(usersResponse?.Data?.length || 0);
+        // Tổng user
+        const { data } = await getTotalUsers();
+        setTotalUsers(data);
 
+        // Tổng số giao dịch & tổng tiền giao dịch
         const totalTrans = await transactionService.getTotalTransactions();
         setTotalTransactions(totalTrans.data);
 
@@ -90,9 +86,6 @@ const Chart = () => {
       <Content className="p-6 bg-white rounded-lg">
         {error && <div style={{ color: "red", marginBottom: 16 }}>{error}</div>}
 
-        {/* BookingStatusFilter Component added here */}
-        <BookingStatusFilter />
-
         <Row gutter={[16, 16]} className="mb-6">
           <Col span={8}>
             <Card loading={loading}>
@@ -106,11 +99,7 @@ const Chart = () => {
           </Col>
           <Col span={8}>
             <Card loading={loading}>
-              <Statistic
-                title="Total Completed Bookings"
-                value={bookingData.length}
-                valueStyle={{ color: "#3f8600" }}
-              />
+              <Statistic title="Total completed booking" value={bookingData.length} valueStyle={{ color: "#3f8600" }} />
             </Card>
           </Col>
           <Col span={8}>
@@ -123,7 +112,6 @@ const Chart = () => {
               <Statistic title="Total Transactions" value={totalTransactions} valueStyle={{ color: "#722ed1" }} />
             </Card>
           </Col>
-
           <Col span={8}>
             <Card loading={loading}>
               <Statistic

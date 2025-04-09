@@ -1,8 +1,9 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Table, Input, Button, Spin, message, Tooltip } from "antd";
-import { DeleteOutlined, PlusOutlined, EyeOutlined } from "@ant-design/icons";
+import { EyeOutlined } from "@ant-design/icons";
 import { bookingService } from "../../../services/bookingService";
 import DetailBooking from "./Detail";
+import dayjs from "dayjs";
 
 const { Search } = Input;
 
@@ -12,42 +13,39 @@ const Bookings = () => {
   const [searchText, setSearchText] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("Pending");
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
+  const [metaData, setMetaData] = useState<MetaData | null>(null);
   const [pageNumber, setPageNumber] = useState<number>(1);
-  const [pageSize, setPageSize] = useState<number>(20);
+  const [pageSize, setPageSize] = useState<number>(10);
   const [error, setError] = useState<string | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
   const [selectedBookingId, setSelectedBookingId] = useState<string | null>(null);
 
-  const fetchBookings = async () => {
+  const fetchBookings = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const bookings = await bookingService.getAllBookings(statusFilter, pageNumber, pageSize);
-      console.log("Fetched bookings:", bookings);
-      setData(Array.isArray(bookings) ? bookings : []);
+      const response = await bookingService.getAllBookings(statusFilter, pageNumber, pageSize);
+      console.log("Fetched bookings:", response);
+      setData(Array.isArray(response.Data) ? response.Data : []);
+      setMetaData(response.MetaData); // ← lưu lại phân trang
 
       const uniqueCategories = Array.from(
-        new Set(
-          bookings
-            .filter((b: Booking) => b !== undefined && b.Service?.Category !== undefined)
-            .map((booking: Booking) => booking.Service.Category)
-        )
+        new Set(response.Data.filter((b: Booking) => b?.Service?.Category).map((b: Booking) => b.Service.Category))
       );
       setCategories(uniqueCategories as Category[]);
     } catch (error: any) {
-      message.error("Không thể lấy danh sách đặt chỗ");
+      message.error("Không thể lấy danh sách đặt lịch");
       setError(error.message || "Lỗi không xác định");
       setData([]);
-      console.error("Fetch error:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [statusFilter, pageNumber, pageSize]);
 
   useEffect(() => {
     fetchBookings();
-  }, [statusFilter, pageNumber, pageSize]);
+  }, [fetchBookings]);
 
   const handleSearch = (value: string) => {
     setSearchText(value);
@@ -69,15 +67,21 @@ const Bookings = () => {
     : [];
 
   const handleDetail = (id: string) => {
-    console.log("Opening detail for ID:", id); // Debug log
     setSelectedBookingId(id);
     setIsDetailModalVisible(true);
   };
 
   const columns = [
-    { title: "ID", dataIndex: "Id", key: "Id" },
-    { title: "Customer ID", dataIndex: "CustomerId", key: "CustomerId" },
-    { title: "Mechanist ID", dataIndex: "MechanistId", key: "MechanistId" },
+    {
+      title: "No.",
+      key: "index",
+      render: (_: any, __: any, index: number) => (pageNumber - 1) * pageSize + index + 1,
+    },
+    {
+      title: "Booking ID",
+      dataIndex: "Id",
+      key: "BookingId",
+    },
     {
       title: "Image",
       dataIndex: ["Service", "Image"],
@@ -98,6 +102,7 @@ const Bookings = () => {
       title: "Price",
       dataIndex: ["Service", "Price"],
       key: "Price",
+      render: (price: number) => (price ? price.toLocaleString("vi-VN") + " ₫" : "0 ₫"),
     },
     {
       title: "Category",
@@ -105,7 +110,13 @@ const Bookings = () => {
       key: "Category",
     },
     { title: "Status", dataIndex: "Status", key: "Status" },
-    { title: "Booking Date", dataIndex: "BookingDate", key: "BookingDate" },
+    {
+      title: "Booking Date",
+      dataIndex: "BookingDate",
+      key: "BookingDate",
+      render: (date: string) => (date ? dayjs(date).format("DD/MM/YYYY HH:mm") : "N/A"),
+    },
+
     {
       title: "Actions",
       key: "actions",
@@ -113,9 +124,6 @@ const Bookings = () => {
         <div className="flex space-x-2">
           <Tooltip title="Chi tiết">
             <Button type="link" icon={<EyeOutlined />} onClick={() => handleDetail(record.Id)} />
-          </Tooltip>
-          <Tooltip title="Xóa">
-            <Button type="link" danger icon={<DeleteOutlined />} />
           </Tooltip>
         </div>
       ),
@@ -152,9 +160,6 @@ const Bookings = () => {
             ))}
           </select>
         </div>
-        <Button type="primary" icon={<PlusOutlined />}>
-          Thêm đặt chỗ
-        </Button>
       </div>
       {loading ? (
         <Spin size="large" />
@@ -168,14 +173,16 @@ const Bookings = () => {
           dataSource={filteredData}
           rowKey="Id"
           pagination={{
-            current: pageNumber,
-            pageSize: pageSize,
+            current: metaData?.CurrentPage || 1,
+            pageSize: metaData?.PageSize || 20,
+            total: metaData?.TotalCount || 0,
             onChange: (page, size) => {
               setPageNumber(page);
               setPageSize(size || 20);
             },
+            showSizeChanger: true,
+            pageSizeOptions: ["10", "20", "50", "100"],
           }}
-          className="mb-4"
         />
       )}
       {selectedBookingId && (

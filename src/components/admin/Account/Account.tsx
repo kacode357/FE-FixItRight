@@ -12,29 +12,6 @@ import dayjs from "dayjs";
 const { Search } = Input;
 const { Option } = Select;
 
-interface MetaData {
-  TotalPages: number;
-  CurrentPage: number;
-  PageSize: number;
-  TotalCount: number;
-  HasPrevious: boolean;
-  HasNext: boolean;
-}
-
-interface User {
-  Id: string;
-  Avatar: string;
-  Fullname: string | null;
-  UserName: string;
-  PhoneNumber: string | null;
-  Address: string | null;
-  Gender: string;
-  Birthday: string;
-  Roles: string[];
-  IsVerified: boolean;
-  Active: boolean;
-}
-
 const Account = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [metaData, setMetaData] = useState<MetaData>({
@@ -90,8 +67,8 @@ const Account = () => {
   }, [debouncedSearch]);
 
   useEffect(() => {
-    fetchUsers(metaData.CurrentPage);
-  }, [searchName, roleFilter, metaData.CurrentPage]);
+    fetchUsers(metaData.CurrentPage, metaData.PageSize);
+  }, [searchName, roleFilter, metaData.CurrentPage, metaData.PageSize]);
 
   const handleRoleFilterChange = (value: string | undefined) => {
     setRoleFilter(value || null);
@@ -116,6 +93,11 @@ const Account = () => {
   };
 
   const columns = [
+    {
+      title: "No.",
+      key: "index",
+      render: (_: any, __: any, index: number) => (metaData.CurrentPage - 1) * metaData.PageSize + index + 1,
+    },
     {
       title: "Avatar",
       dataIndex: "Avatar",

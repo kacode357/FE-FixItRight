@@ -20,7 +20,7 @@ const Services = () => {
   const [data, setData] = useState<Service[]>([]);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(5);
+  const [pageSize, setPageSize] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [searchName, setSearchName] = useState<string>("");
   const [isAddModalVisible, setIsAddModalVisible] = useState(false);
@@ -65,6 +65,11 @@ const Services = () => {
 
   const columns = [
     {
+      title: "No.",
+      key: "index",
+      render: (_: any, __: any, index: number) => (currentPage - 1) * pageSize + index + 1,
+    },
+    {
       title: "Service Name",
       dataIndex: "Name",
       key: "Name",
@@ -84,9 +89,7 @@ const Services = () => {
       title: "Image",
       dataIndex: "Image",
       key: "Image",
-      render: (image: string) => (
-        <img src={image} alt="Service" className="w-12 h-12 object-cover" />
-      ),
+      render: (image: string) => <img src={image} alt="Service" className="w-12 h-12 object-cover" />,
     },
     {
       title: "Actions",
@@ -94,19 +97,10 @@ const Services = () => {
       render: (_: any, record: Service) => (
         <div className="flex space-x-2">
           <Tooltip title="Edit">
-            <Button
-              type="link"
-              icon={<EditOutlined />}
-              onClick={() => handleEdit(record.Id)}
-            />
+            <Button type="link" icon={<EditOutlined />} onClick={() => handleEdit(record.Id)} />
           </Tooltip>
           <Tooltip title="Delete">
-            <Button
-              type="link"
-              danger
-              icon={<DeleteOutlined />}
-              onClick={() => handleDelete(record.Id)}
-            />
+            <Button type="link" danger icon={<DeleteOutlined />} onClick={() => handleDelete(record.Id)} />
           </Tooltip>
         </div>
       ),
@@ -119,7 +113,7 @@ const Services = () => {
   };
 
   return (
-    <div style={{ position: "relative",  left: 0 }}>
+    <div style={{ position: "relative", left: 0 }}>
       <div className="mb-4 flex justify-between">
         <Search
           placeholder="Search by service name"

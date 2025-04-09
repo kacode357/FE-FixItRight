@@ -10,7 +10,7 @@ const MonthlyOrdersChart = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const bookings = await bookingService.getAllBookings("Completed", 1, 1000);
+        const { Data: bookings } = await bookingService.getAllBookings("Completed", 1, 1000);
         const monthOrderMap: { [key: string]: number } = {};
 
         bookings.forEach((booking: any) => {

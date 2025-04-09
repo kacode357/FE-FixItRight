@@ -125,6 +125,12 @@ const EditRepairServiceApi = async (
   return response.data;
 };
 
+const getTotalUsers = async () => {
+  const URL_API = "/api/users/number-of-users";
+  const response = await defaultAxiosInstance.get(URL_API);
+  return response;
+};
+
 export {
   EditRepairServiceApi,
   GetRepairServiceById,
@@ -139,4 +145,5 @@ export {
   GetAllUsers,
   GetCurrentLogin,
   LoginUserApi,
+  getTotalUsers,
 };
